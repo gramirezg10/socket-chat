@@ -20,7 +20,6 @@ class Users {
 
     getPersonsPerRoom(room) {
         let personsPerRoom = this.persons.filter(person => person.room === room)
-        console.log(personsPerRoom)
         return personsPerRoom
     }
 

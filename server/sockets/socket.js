@@ -3,7 +3,7 @@ const { Users } = require('../classes/Users')
 const { createMessage } = require ('../utils/utils')
 const users = new Users()
 
-io.on('connection', (client) => {
+io.on('connect', (client) => {
     client.on('joinChat', (user, callback) => {
         if (!user.userName || !user.room) {
             return callback({
@@ -11,18 +11,19 @@ io.on('connection', (client) => {
                 message: 'userName and room are required!'
             })
         }
-
         client.join(user.room)
 
         users.addPerson(client.id, user.userName, user.room)
         client.broadcast.to(user.room).emit('listPersons', users.getPersonsPerRoom(user.room))
+        client.broadcast.to(user.room).emit('createMessage', createMessage('Admin', `${user.userName} joined this chat`))
         callback(users.getPersonsPerRoom(user.room))
     })
 
-    client.on('createMessage', (data) => {
+    client.on('createMessage', (data, callback) => {
         let person = users.getPerson(client.id)
         let message= createMessage(person.name, data.message)
         client.broadcast.to(person.room).emit('createMessage', message)
+        callback(message)
     })
     
     client.on('disconnect', () => {
